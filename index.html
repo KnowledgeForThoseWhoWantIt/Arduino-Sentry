@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sentry — Arduino Motion-Alert Turret</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0F2A3D;
+    --ink-deep:#0A1F2E;
+    --grid:#1C4258;
+    --cyan:#8FE3D6;
+    --cyan-dim:#4E8B85;
+    --copper:#E3A857;
+    --paper:#F3F1E7;
+    --slate:#9FB4C2;
+    --danger:#E36857;
+  }
+
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--ink);
+    color:var(--paper);
+    font-family:'IBM Plex Mono', monospace;
+    line-height:1.6;
+    background-image:
+      linear-gradient(var(--grid) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+    background-size: 42px 42px;
+    background-attachment: fixed;
+  }
+
+  h1,h2,h3{
+    font-family:'Space Grotesk', sans-serif;
+    margin:0;
+    letter-spacing:-0.01em;
+  }
+
+  a{color:var(--copper);}
+
+  .sheet{
+    max-width:920px;
+    margin:0 auto;
+    padding:110px 28px;
+    border-bottom:1px solid var(--grid);
+  }
+  .sheet:last-of-type{border-bottom:none;}
+
+  .eyebrow{
+    font-size:12px;
+    letter-spacing:0.18em;
+    text-transform:uppercase;
+    color:var(--cyan);
+    margin-bottom:18px;
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  .eyebrow::before{
+    content:"";
+    width:22px;
+    height:1px;
+    background:var(--cyan-dim);
+    display:inline-block;
+  }
+
+  /* ---------- HERO ---------- */
+  .hero{
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    padding-top:60px;
+    padding-bottom:60px;
+    border-bottom:1px solid var(--grid);
+  }
+  .hero-inner{
+    max-width:920px;
+    margin:0 auto;
+    padding:0 28px;
+    width:100%;
+  }
+  .hero h1{
+    font-size:clamp(56px, 11vw, 128px);
+    font-weight:700;
+    color:var(--paper);
+    line-height:0.92;
+  }
+  .hero .tagline{
+    font-size:17px;
+    color:var(--slate);
+    max-width:520px;
+    margin-top:22px;
+  }
+  .hero .kit-note{
+    margin-top:8px;
+    font-size:13px;
+    color:var(--cyan-dim);
+  }
+
+  .scanner{
+    margin-top:56px;
+    display:flex;
+    align-items:center;
+    gap:36px;
+    flex-wrap:wrap;
+  }
+  .scanner svg{ overflow:visible; }
+  .scanner-readout{
+    font-size:13px;
+    color:var(--slate);
+    letter-spacing:0.05em;
+  }
+  .scanner-readout .status{
+    color:var(--cyan);
+    font-weight:600;
+  }
+  .scanner-readout .status.alert{ color:var(--danger); }
+  .scanner-readout .angle{
+    font-size:34px;
+    color:var(--paper);
+    font-family:'Space Grotesk',sans-serif;
+    margin:6px 0;
+  }
+
+  /* ---------- VIDEO ---------- */
+  .video-frame{
+    border:1px solid var(--grid);
+    background:var(--ink-deep);
+    padding:10px;
+    margin-top:36px;
+  }
+  video{
+    width:100%;
+    display:block;
+  }
+  .caption{
+    font-size:13px;
+    color:var(--slate);
+    margin-top:14px;
+  }
+
+  /* ---------- GALLERY ---------- */
+  .gallery{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:18px;
+    margin-top:36px;
+  }
+  .gallery figure{
+    margin:0;
+    border:1px solid var(--grid);
+    background:var(--ink-deep);
+    padding:8px;
+  }
+  .gallery img{
+    width:100%;
+    display:block;
+    filter: sepia(8%) saturate(85%) brightness(0.96);
+  }
+  .gallery figcaption{
+    font-size:12.5px;
+    color:var(--slate);
+    padding:10px 4px 2px;
+  }
+  .gallery figcaption .tag{
+    color:var(--copper);
+  }
+  @media (max-width:640px){
+    .gallery{grid-template-columns:1fr;}
+  }
+
+  /* ---------- HOW IT WORKS ---------- */
+  .behavior{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:16px;
+    margin:36px 0 48px;
+  }
+  .behavior .step{
+    border:1px solid var(--grid);
+    padding:20px 18px;
+    position:relative;
+  }
+  .behavior .step .n{
+    font-family:'Space Grotesk',sans-serif;
+    color:var(--cyan-dim);
+    font-size:13px;
+    margin-bottom:10px;
+    display:block;
+  }
+  .behavior .step h3{
+    font-size:16px;
+    color:var(--paper);
+    margin-bottom:8px;
+  }
+  .behavior .step p{
+    font-size:13.5px;
+    color:var(--slate);
+    margin:0;
+  }
+  @media (max-width:700px){
+    .behavior{grid-template-columns:1fr;}
+  }
+
+  table{
+    width:100%;
+    border-collapse:collapse;
+    font-size:13.5px;
+    margin-top:10px;
+  }
+  th,td{
+    text-align:left;
+    padding:10px 12px;
+    border-bottom:1px solid var(--grid);
+  }
+  th{
+    color:var(--cyan);
+    font-weight:500;
+    letter-spacing:0.04em;
+    text-transform:uppercase;
+    font-size:11.5px;
+  }
+  td{color:var(--slate);}
+  td.pin{color:var(--copper);}
+
+  /* ---------- CODE ---------- */
+  .code-block{
+    background:var(--ink-deep);
+    border:1px solid var(--grid);
+    padding:22px 24px;
+    font-size:12.5px;
+    overflow-x:auto;
+    margin-top:24px;
+    color:#C9D6D3;
+    white-space:pre;
+    line-height:1.65;
+  }
+  .code-block .kw{color:var(--cyan);}
+  .code-block .cm{color:var(--cyan-dim); font-style:italic;}
+  .code-block .fn{color:var(--copper);}
+
+  .repo-link{
+    display:inline-flex;
+    align-items:center;
+    gap:10px;
+    border:1px solid var(--cyan-dim);
+    padding:10px 16px;
+    font-size:13px;
+    color:var(--cyan);
+    text-decoration:none;
+    margin-top:18px;
+  }
+  .repo-link:hover{border-color:var(--cyan);}
+
+  /* ---------- PROBLEMS ---------- */
+  .log{
+    counter-reset: lognum;
+    margin-top:32px;
+    border-left:1px solid var(--grid);
+    padding-left:0;
+  }
+  .log li{
+    list-style:none;
+    counter-increment: lognum;
+    position:relative;
+    padding:0 0 26px 34px;
+    font-size:14px;
+    color:var(--slate);
+  }
+  .log li::before{
+    content: counter(lognum, decimal-leading-zero);
+    position:absolute;
+    left:-14px;
+    top:0;
+    transform:translateX(-50%);
+    background:var(--ink);
+    color:var(--copper);
+    font-family:'Space Grotesk',sans-serif;
+    font-size:12px;
+    padding:0 6px;
+  }
+  .log li strong{color:var(--paper); font-weight:600;}
+
+  /* ---------- NEXT ---------- */
+  .next-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:14px;
+    margin-top:32px;
+  }
+  .next-grid .card{
+    border:1px dashed var(--grid);
+    padding:18px;
+  }
+  .next-grid .card h3{
+    font-size:14.5px;
+    color:var(--paper);
+    margin-bottom:8px;
+  }
+  .next-grid .card p{
+    font-size:13px;
+    color:var(--slate);
+    margin:0;
+  }
+  @media (max-width:640px){
+    .next-grid{grid-template-columns:1fr;}
+  }
+
+  footer{
+    text-align:center;
+    padding:50px 28px 70px;
+    font-size:12px;
+    color:var(--cyan-dim);
+    letter-spacing:0.05em;
+  }
+
+  h2.sheet-title{
+    font-size:clamp(28px,4vw,40px);
+    color:var(--paper);
+    margin-bottom:6px;
+  }
+  .sheet-sub{
+    color:var(--slate);
+    font-size:14.5px;
+    max-width:560px;
+  }
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-inner">
+    <div class="eyebrow">SHEET 01 / OVERVIEW</div>
+    <h1>SENTRY</h1>
+    <p class="tagline">A motion-alert scanning turret built on an Arduino Mega 2560 — servo sweep, PIR detection, and a live status readout, assembled entirely from a stock starter kit.</p>
+    <p class="kit-note">// no parts purchased beyond what shipped in the box</p>
+
+    <div class="scanner">
+      <svg width="220" height="140" viewBox="0 0 220 140">
+        <path d="M 20 120 A 100 100 0 0 1 200 120" fill="none" stroke="#1C4258" stroke-width="1" stroke-dasharray="2 6"/>
+        <path d="M 45 120 A 75 75 0 0 1 175 120" fill="none" stroke="#1C4258" stroke-width="1" stroke-dasharray="2 6"/>
+        <path d="M 70 120 A 50 50 0 0 1 150 120" fill="none" stroke="#1C4258" stroke-width="1" stroke-dasharray="2 6"/>
+        <line x1="20" y1="120" x2="200" y2="120" stroke="#1C4258" stroke-width="1"/>
+        <g id="sweepGroup" style="transform-origin: 110px 120px;">
+          <line x1="110" y1="120" x2="110" y2="26" stroke="#8FE3D6" stroke-width="2"/>
+          <circle cx="110" cy="26" r="3.5" fill="#8FE3D6"/>
+        </g>
+        <circle cx="110" cy="120" r="5" fill="#E3A857"/>
+      </svg>
+      <div class="scanner-readout">
+        <div>STATUS: <span class="status" id="statusText">SCANNING</span></div>
+        <div class="angle" id="angleText">090°</div>
+        <div>servo sweep, live</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- DEMO -->
+<section class="sheet">
+  <div class="eyebrow">SHEET 02 / DEMONSTRATION</div>
+  <h2 class="sheet-title">Watch it react</h2>
+  <p class="sheet-sub">Scanning back and forth, then locking on the moment it senses movement — buzzer, LED, and LCD all firing together.</p>
+  <div class="video-frame">
+    <video controls preload="metadata">
+      <source src="assets/demo.mp4" type="video/mp4">
+      Your browser doesn't support embedded video — the file is at assets/demo.mp4.
+    </video>
+  </div>
+  <p class="caption">Full demo: calm scanning → motion detected → alert → cooldown → resume scanning.</p>
+</section>
+
+<!-- GALLERY -->
+<section class="sheet">
+  <div class="eyebrow">SHEET 03 / THE BUILD</div>
+  <h2 class="sheet-title">Wiring, piece by piece</h2>
+  <p class="sheet-sub">Built incrementally — each component tested alone on the breadboard before being folded into the combined circuit.</p>
+  <div class="gallery">
+    <figure>
+      <img src="assets/build-1.jpeg" alt="Early breadboard test with LEDs, resistors, and jumper wires connected to the Arduino Mega">
+      <figcaption><span class="tag">01</span> — Early breadboard pass: LEDs, resistors, and the first tangle of jumper wires running back to the Mega.</figcaption>
+    </figure>
+    <figure>
+      <img src="assets/build-2.jpeg" alt="LCD1602 screen held up next to the wired breadboard, servo, and PIR sensor">
+      <figcaption><span class="tag">02</span> — The LCD1602 wired in, servo and PIR sensor already staged in the background.</figcaption>
+    </figure>
+    <figure>
+      <img src="assets/build-3.jpeg" alt="Close-up of jumper wires running into the Arduino Mega digital pin header, PIR sensor visible in the background">
+      <figcaption><span class="tag">03</span> — Close-up on the digital pin header — this is where most of the wiring mix-ups happened.</figcaption>
+    </figure>
+    <figure>
+      <img src="assets/build-4.jpeg" alt="Micro servo and PIR motion sensor being positioned together before mounting">
+      <figcaption><span class="tag">04</span> — Positioning the PIR sensor against the servo horn before final mounting.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="sheet">
+  <div class="eyebrow">SHEET 04 / HOW IT WORKS</div>
+  <h2 class="sheet-title">Behavior &amp; wiring</h2>
+  <p class="sheet-sub">Three states, one shared circuit. The servo sweep, the PIR sensor, and the alert outputs all run off a single combined sketch.</p>
+
+  <div class="behavior">
+    <div class="step">
+      <span class="n">STATE A</span>
+      <h3>Scanning</h3>
+      <p>Servo sweeps 0°–180° continuously. LCD reads "Scanning...". No alert outputs active.</p>
+    </div>
+    <div class="step">
+      <span class="n">STATE B</span>
+      <h3>Alert</h3>
+      <p>PIR triggers HIGH. Servo holds its position. Buzzer and LED activate, LCD switches to "MOTION DETECTED".</p>
+    </div>
+    <div class="step">
+      <span class="n">STATE C</span>
+      <h3>Cooldown</h3>
+      <p>After ~4 seconds with no motion, alert clears and the sweep resumes from wherever it left off.</p>
+    </div>
+  </div>
+
+  <table>
+    <tr><th>Component</th><th>Connects to</th></tr>
+    <tr><td>Servo — signal</td><td class="pin">Pin 9</td></tr>
+    <tr><td>PIR sensor — OUT</td><td class="pin">Pin 7</td></tr>
+    <tr><td>Buzzer — +</td><td class="pin">Pin 8</td></tr>
+    <tr><td>LED — anode (via resistor)</td><td class="pin">Pin 6</td></tr>
+    <tr><td>LCD1602 — RS / E</td><td class="pin">Pin 12 / Pin 11</td></tr>
+    <tr><td>LCD1602 — D4–D7</td><td class="pin">Pins 5, 4, 3, 2</td></tr>
+    <tr><td>LCD1602 — V0 (contrast)</td><td class="pin">Wired directly to GND</td></tr>
+    <tr><td>Shared power</td><td class="pin">Breadboard 5V / GND rails</td></tr>
+  </table>
+</section>
+
+<!-- CODE -->
+<section class="sheet">
+  <div class="eyebrow">SHEET 05 / CODE</div>
+  <h2 class="sheet-title">The combined sketch</h2>
+  <p class="sheet-sub">Non-blocking servo sweep so it can be interrupted mid-motion the instant the PIR sensor fires.</p>
+
+  <a class="repo-link" href="https://github.com/KnowledgeForThoseWhoWantIt/Arduino-Sentry" target="_blank" rel="noopener">↗ github.com/KnowledgeForThoseWhoWantIt/Arduino-Sentry</a>
+
+  <div class="code-block">#<span class="kw">include</span> &lt;Servo.h&gt;
+#<span class="kw">include</span> &lt;LiquidCrystal.h&gt;
+
+Servo sweepServo;
+LiquidCrystal lcd(<span class="fn">12</span>, <span class="fn">11</span>, <span class="fn">5</span>, <span class="fn">4</span>, <span class="fn">3</span>, <span class="fn">2</span>);
+
+<span class="kw">const</span> <span class="kw">int</span> pirPin = <span class="fn">7</span>;
+<span class="kw">const</span> <span class="kw">int</span> buzzerPin = <span class="fn">8</span>;
+<span class="kw">const</span> <span class="kw">int</span> ledPin = <span class="fn">6</span>;
+<span class="kw">const</span> <span class="kw">int</span> servoPin = <span class="fn">9</span>;
+
+<span class="kw">int</span> angle = <span class="fn">0</span>;
+<span class="kw">int</span> direction = <span class="fn">1</span>;
+<span class="kw">unsigned</span> <span class="kw">long</span> lastMotionTime = <span class="fn">0</span>;
+<span class="kw">const</span> <span class="kw">unsigned</span> <span class="kw">long</span> cooldown = <span class="fn">4000</span>;
+<span class="kw">bool</span> alertMode = <span class="kw">false</span>;
+
+<span class="cm">// full sketch continues — sweepStep(), enterAlertMode(),
+// exitAlertMode() handle the state transitions above</span></div>
+</section>
+
+<!-- PROBLEMS -->
+<section class="sheet">
+  <div class="eyebrow">SHEET 06 / PROBLEMS ENCOUNTERED</div>
+  <h2 class="sheet-title">What went wrong (and how it got fixed)</h2>
+  <p class="sheet-sub">Not a clean build on the first pass — here's the actual trail of mistakes.</p>
+
+  <ul class="log">
+    <li><strong>Wrong sensor assumed.</strong> Planned the whole project around an HC-SR04 ultrasonic sensor before realizing the kit only had an HC-SR501 PIR sensor — no distance data, just motion. Required redesigning the concept from a radar scanner into a motion-alert sentry.</li>
+    <li><strong>Direct-plug assumption.</strong> Didn't realize components needed jumper wires to bridge into the Arduino's header holes rather than plugging in directly.</li>
+    <li><strong>Active vs. passive buzzer.</strong> The kit included both — each needs different code (simple <code>digitalWrite</code> vs. <code>tone()</code>), so identifying the right one mattered.</li>
+    <li><strong>Breadboard column mix-up.</strong> Placed a potentiometer's two outer legs in the same column, accidentally shorting them, before understanding that only same-column placement creates a connection.</li>
+    <li><strong>Odd-shaped potentiometer legs.</strong> The trimmer pot's legs were splayed at angles instead of a straight line, making it awkward to seat correctly on the breadboard.</li>
+    <li><strong>Simplified LCD contrast.</strong> Skipped the potentiometer entirely by wiring V0 directly to GND — a simpler fixed-contrast workaround that worked fine.</li>
+    <li><strong>Ran out of GND pins.</strong> Solved by consolidating all grounds onto the breadboard's shared GND rail instead of wiring each one back to the Arduino individually.</li>
+    <li><strong>Merging independent test sketches.</strong> The servo sweep had to change from a blocking loop to a step-by-step non-blocking approach so it could be interrupted by PIR motion detection mid-sweep.</li>
+  </ul>
+</section>
+
+<!-- NEXT -->
+<section class="sheet">
+  <div class="eyebrow">SHEET 07 / WHAT'S NEXT</div>
+  <h2 class="sheet-title">If this were v2</h2>
+  <div class="next-grid">
+    <div class="card">
+      <h3>Add distance sensing back in</h3>
+      <p>Pair the PIR trigger with an ultrasonic sensor so it can report how far away the motion is, not just that it happened.</p>
+    </div>
+    <div class="card">
+      <h3>Real enclosure</h3>
+      <p>Move off tape-and-cardboard to a printed or laser-cut housing so the electronics are protected and it looks finished.</p>
+    </div>
+    <div class="card">
+      <h3>Adjustable sensitivity via button</h3>
+      <p>Replace the PIR's physical trimmer pots with a button-cycled setting shown on the LCD, so tuning doesn't require a screwdriver.</p>
+    </div>
+    <div class="card">
+      <h3>RFID override</h3>
+      <p>The kit's RC522 reader was never used — a scanned badge could pause alerts, turning this into a lightweight access-aware sentry.</p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  BUILT WITH AN ARDUINO MEGA 2560 · SERVO · PIR SENSOR · LCD1602 · A LOT OF JUMPER WIRES
+  <div style="margin-top:14px; color:var(--copper); letter-spacing:0.08em;">DESIGNED &amp; BUILT BY BRUCK SIRAK</div>
+</footer>
+
+<script>
+  const sweep = document.getElementById('sweepGroup');
+  const angleText = document.getElementById('angleText');
+  const statusText = document.getElementById('statusText');
+
+  let angle = 0;
+  let dir = 1;
+  let alertUntil = 0;
+  let nextAlertAt = performance.now() + 4000 + Math.random() * 3000;
+
+  function frame(t){
+    if (t < alertUntil) {
+      statusText.textContent = 'MOTION DETECTED';
+      statusText.classList.add('alert');
+    } else {
+      statusText.classList.remove('alert');
+      statusText.textContent = 'SCANNING';
+
+      angle += dir * 0.9;
+      if (angle >= 90) { angle = 90; dir = -1; }
+      if (angle <= -90) { angle = -90; dir = 1; }
+
+      if (t > nextAlertAt) {
+        alertUntil = t + 1800;
+        nextAlertAt = t + 4000 + Math.random() * 4000;
+      }
+    }
+
+    sweep.style.transform = `rotate(${angle}deg)`;
+    const displayAngle = Math.round(angle + 90);
+    angleText.textContent = String(displayAngle).padStart(3,'0') + '°';
+
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+</script>
+
+</body>
+</html>
