@@ -2,6 +2,8 @@
 Arduino Mega motion-alert turret, servo sweep, PIR detection, buzzer/LED/LCD alerts, built entirely from a starter kit.
 ## What it does
 
+Link: https://knowledgeforthosewhowantit.github.io/Arduino-Sentry/
+
 Sentry sweeps a servo back and forth like it's scanning an area. The moment its PIR sensor detects motion, it stops mid-sweep, sounds a buzzer, lights an LED, and switches its LCD display to an alert message. After a few seconds with no further motion, it resets and resumes scanning.
 
 ## Components
